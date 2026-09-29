@@ -10,12 +10,12 @@ env:
   DOCKER_IMAGE_NAME: ${{ secrets.DOCKER_USERNAME }}/ppw-api
 
 jobs:
+  # ==============================
+  # 1. Validação NestJS (Backend)
+  # ==============================
   backend-validation:
     name: Backend (NestJS) - Lint, Test & Build
     runs-on: ubuntu-latest
-    defaults:
-      run:
-        working-directory: ./ppw_server
 
     steps:
       - name: Checkout do código
@@ -41,6 +41,9 @@ jobs:
       - name: Validação do Build TypeScript
         run: npm run build
 
+  # ==============================
+  # 2. Build & Push da Imagem Docker (Apenas na main se os testes passarem)
+  # ==============================
   docker-publish:
     name: Build and Push Docker Image
     needs: [backend-validation]
@@ -63,8 +66,8 @@ jobs:
       - name: Construir e Publicar Imagem
         uses: docker/build-push-action@v6
         with:
-          context: ./ppw_server
-          file: ./ppw_server/Dockerfile
+          context: .
+          file: ./Dockerfile
           push: true
           tags: |
             ${{ env.DOCKER_IMAGE_NAME }}:latest
