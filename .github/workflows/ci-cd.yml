@@ -7,7 +7,7 @@ on:
     branches: ['main', 'develop']
 
 env:
-  DOCKER_IMAGE_NAME: ${{ secrets.DOCKER_USERNAME }}/nome-da-sua-api # Altere para o nome desejado da imagem
+  DOCKER_IMAGE_NAME: ${{ secrets.DOCKER_USERNAME }}/ppw-api
 
 jobs:
   # ==============================
@@ -18,7 +18,7 @@ jobs:
     runs-on: ubuntu-latest
     defaults:
       run:
-        working-directory: ./apps/backend
+        working-directory: ./ppw_server
 
     steps:
       - name: Checkout do código
@@ -29,10 +29,13 @@ jobs:
         with:
           node-version: 20
           cache: 'npm'
-          cache-dependency-path: apps/backend/package-lock.json
+          cache-dependency-path: ppw_server/package-lock.json
 
       - name: Instalar dependências
         run: npm ci
+
+      - name: Gerar Prisma Client
+        run: npx prisma generate
 
       - name: Checagem de Lint
         run: npm run lint
@@ -48,7 +51,7 @@ jobs:
   # ==============================
   docker-publish:
     name: Build and Push Docker Image
-    needs: [backend-validation] # Aguarda a validação do backend com sucesso
+    needs: [backend-validation]
     if: github.ref == 'refs/heads/main' && github.event_name == 'push'
     runs-on: ubuntu-latest
 
@@ -68,8 +71,8 @@ jobs:
       - name: Construir e Publicar Imagem
         uses: docker/build-push-action@v6
         with:
-          context: ./apps/backend
-          file: ./apps/backend/Dockerfile
+          context: ./ppw_server
+          file: ./ppw_server/Dockerfile
           push: true
           tags: |
             ${{ env.DOCKER_IMAGE_NAME }}:latest
