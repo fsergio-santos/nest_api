@@ -1,0 +1,23 @@
+# version: '3.8'
+
+# services:
+#   backend:
+#     image: fsergiosantos/nest-api:latest
+#     container_name: nestjs-api
+#     restart: always
+#     ports:
+#       - '3000:3000'
+#     environment:
+#       - NODE_ENV=production
+#       - PORT=3000
+#       - DB_HOST=meu-postgres # Nome do contêiner do seu PostgreSQL
+#       - DB_PORT=5432
+#       - DB_USER=${DB_USER}
+#       - DB_PASSWORD=${DB_PASS}
+#       - DB_NAME=${DB_NAME}
+#     networks:
+#       - postgres-network
+
+# networks:
+#   postgres-network:
+#     external: true # Indica que a rede do PostgreSQL já existe no servidor
