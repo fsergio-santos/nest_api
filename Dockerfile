@@ -11,12 +11,20 @@ COPY package*.json ./
 # Instala todas as dependências (inclusive devDependencies para o build)
 RUN npm ci
 
-# Copia o código-fonte e compila
+# Copia todo o código-fonte
 COPY . .
+
+# Gera o Prisma Client com os tipos necessários ANTES do build
+RUN npx prisma generate --schema=./src/shared/infrastructure/database/prisma/schema.prisma
+
+# Compila a aplicação NestJS
 RUN npm run build
 
 # Limpa devDependencies mantendo apenas o necessário para produção
 RUN npm prune --production
+
+# Re-gera o cliente de produção caso o prune remova artefatos do client
+RUN npx prisma generate --schema=./src/shared/infrastructure/database/prisma/schema.prisma
 
 # ------------------------------------
 # 2. Estágio Final de Execução (Leve e Seguro)
@@ -32,7 +40,7 @@ USER node
 # Copia apenas os módulos de produção e o build compilado
 COPY --chown=node:node --from=builder /usr/src/app/node_modules ./node_modules
 COPY --chown=node:node --from=builder /usr/src/app/dist ./dist
-COPY --chown=node:node --from=builder /usr/src/app/prisma ./prisma
+COPY --chown=node:node --from=builder /usr/src/app/src/shared/infrastructure/database/prisma ./src/shared/infrastructure/database/prisma
 COPY --chown=node:node package*.json ./
 
 EXPOSE 3000
