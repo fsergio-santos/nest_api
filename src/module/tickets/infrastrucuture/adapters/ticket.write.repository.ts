@@ -1,8 +1,8 @@
 import { Injectable } from '@nestjs/common';
+import { Prisma } from '@prisma/client';
 import { ConflictError } from '../../../../shared/domain/error/conflict.error.domain';
 import { NotFoundError } from '../../../../shared/domain/error/not.found.error.domain';
 import { PrismaService } from '../../../../shared/infrastructure/database/prisma/prisma.service';
-import { Prisma } from '../../../../shared/infrastructure/database/prisma/prisma/client';
 import { TicketEntity } from '../../domain/entities/tickets.entity';
 import { TicketWriteRepository } from '../../domain/ports/ticket.write.repository';
 import { Status } from '../../domain/value-objects/status.value.objects';
@@ -20,11 +20,11 @@ export class PrismaTicketWriteRepository implements TicketWriteRepository {
     } catch (error) {
       if (error instanceof Prisma.PrismaClientKnownRequestError) {
         // P2002: Unique constraint violation (ex: slug ou código único duplicado)
-        if (error.code === 'P2002') {
+        if ((error as any)?.code === 'P2002') {
           throw new ConflictError(`Já existe um ticket cadastrado com esses dados.`);
         }
         // P2025: Registro relacionado não encontrado (Foreign Key inválida)
-        if (error.code === 'P2025') {
+        if ((error as any)?.code === 'P2025') {
           throw new NotFoundError(`Usuário ou categoria vinculada não existe.`);
         }
       }
@@ -43,12 +43,12 @@ export class PrismaTicketWriteRepository implements TicketWriteRepository {
     } catch (error) {
       if (error instanceof Prisma.PrismaClientKnownRequestError) {
         // P2025: Registro a ser atualizado não existe no banco
-        if (error.code === 'P2025') {
+        if ((error as any)?.code === 'P2025') {
           throw new NotFoundError(`Ticket com id "${ticket.id.value}" não encontrado para atualização.`);
         }
 
         // P2002: Violação de chave única (ex: título único ou slug duplicado)
-        if (error.code === 'P2002') {
+        if ((error as any)?.code === 'P2002') {
           throw new ConflictError(`Já existe um ticket cadastrado com esses dados.`);
         }
       }
@@ -73,7 +73,7 @@ export class PrismaTicketWriteRepository implements TicketWriteRepository {
     } catch (error) {
       if (error instanceof Prisma.PrismaClientKnownRequestError) {
         // P2025: Registro a ser atualizado não existe no banco
-        if (error.code === 'P2025') {
+        if ((error as any)?.code === 'P2025') {
           throw new NotFoundError(`Ticket com id "${id}" não encontrado para atualizar status.`);
         }
       }
